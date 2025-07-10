@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cañña Biz Menú</title>
+    <!-- Importación de la tipografía Playlist Script desde Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playlist+Script&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --rojo-vino: #570404;
+            --negro: #1a1a1a;
+            --blanco-texto: #f0e9e1;
+            --verde-planta: #4CAF50;
+            --verde-destacado: #1b591f;
+            --rojo-inicio: #e53935;
+            --rojo-fin: #ef5350;
+            --color-fidelity: #FFC107;
+            --sombra: rgba(0, 0, 0, 0.1);
+            --fuente-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --fuente-titulo: 'Playlist Script', cursive;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--fuente-principal);
+            background-color: var(--negro);
+            background-image: radial-gradient(circle, var(--rojo-vino) 0%, var(--negro) 70%);
+            color: var(--blanco-texto);
+            min-height: 100vh;
+        }
+
+        .header { 
+            background-color: var(--negro); 
+            padding: 10px 15px; 
+            text-align: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 1px solid #333;
+        }
+        #header-banner {
+            width: 100%; 
+            max-width: 180px; 
+            height: auto; 
+            display: block;
+            margin: 0 auto; 
+        }
+        
+        .info-section { background-color: #2c2c2c; margin: 15px; border-radius: 10px; box-shadow: 0 2px 8px var(--sombra); overflow: hidden; }
+        .info-toggle { 
+            background-image: linear-gradient(to right, var(--verde-destacado), var(--negro));
+            color: var(--blanco-texto); 
+            width: 100%; padding: 15px; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            border: 1px solid var(--verde-destacado);
+            border-radius: 10px;
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .info-toggle span::after { content: '+'; font-size: 1.5em; transition: transform 0.3s ease; }
+        .info-content { max-height: 0; overflow: hidden; padding: 0 20px; transition: max-height 0.5s ease-out, padding 0.5s ease-out; background-color: #2c2c2c; }
+        .info-content.open { max-height: 1500px; padding: 20px; }
+        .info-toggle.active span::after { transform: rotate(45deg); }
+        .info-content h3 { color: var(--verde-planta); margin-top: 15px; margin-bottom: 8px; border-bottom: 2px solid #444; padding-bottom: 5px; }
+        .info-content h3:first-child { margin-top: 0; }
+        .info-content p, .info-content ul { font-size: 0.95em; line-height: 1.6; color: #ccc; }
+        .info-content ul { padding-left: 20px; }
+        .info-content .alerta { background-color: #5c2020; color: #ff8a80; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; margin-top: 15px; }
+
+        .nav-categorias { display: flex; justify-content: center; flex-wrap: wrap; padding: 15px; background-color: var(--negro); border-bottom: 1px solid #333; position: sticky; top: 58px; z-index: 99; }
+        .nav-categorias button { background-color: #333; color: var(--blanco-texto); border: 1px solid #555; padding: 10px 15px; margin: 5px; border-radius: 20px; font-size: 0.9em; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
+        .nav-categorias button.active { background-color: var(--verde-planta); color: white; border-color: var(--verde-planta); }
+
+        #productos-container { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 20px 15px; }
+
+        .producto-card { background-color: #2c2c2c; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px var(--sombra); transition: margin-bottom 0.3s ease; border: 1px solid #444;}
+        
+        .producto-header { display: flex; align-items: center; padding: 15px; cursor: pointer; }
+        .producto-header.no-expand { cursor: default; }
+        .producto-imagen { width: 80px; height: 80px; object-fit: contain; background-color: #444; border-radius: 10px; margin-right: 15px; flex-shrink: 0; }
+        .producto-info { flex-grow: 1; }
+        .producto-nombre { font-size: 1.3em; font-weight: bold; color: var(--blanco-texto); }
+        .producto-descripcion { font-size: 0.9em; color: #aaa; }
+        .expand-icon { font-size: 1.5em; font-weight: bold; transition: transform 0.3s ease; }
+        .producto-card.expanded .expand-icon { transform: rotate(45deg); }
+
+        .producto-variaciones { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .producto-card.expanded .producto-variaciones { max-height: 800px; }
+        
+        .producto-pie-simple { display: flex; justify-content: space-between; align-items: center; padding: 0 15px 15px 15px; }
+        .producto-precio-simple { font-size: 1.5em; font-weight: bold; color: var(--verde-planta); }
+
+        .variacion-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-top: 1px solid #444; }
+        .variacion-item:first-child { border-top: 1px solid #555; }
+        .variacion-info .tipo { font-weight: bold; color: var(--blanco-texto); }
+        .variacion-info .precio { font-size: 1.2em; color: var(--verde-planta); font-weight: bold; }
+        .variacion-info .fidelity-tag { color: var(--color-fidelity); font-weight: bold; font-size: 0.8em; display: block; }
+        
+        .btn-agregar { background-color: var(--verde-planta); color: white; border: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+        .btn-agregar:hover { background-color: #3e8e41; }
+
+        .carrito-flotante { position: fixed; bottom: 20px; right: 20px; z-index: 200; }
+        .carrito-flotante-btn { background-color: #2c2c2c; color: var(--blanco-texto); border: 1px solid #555; width: 60px; height: 60px; border-radius: 50%; font-size: 24px; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); cursor: pointer; }
+        .carrito-contador { position: absolute; top: -5px; right: -5px; background: linear-gradient(45deg, var(--rojo-inicio), var(--rojo-fin)); color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; display: flex; justify-content: center; align-items: center; }
+        
+        .fixed-image-container { position: fixed; bottom: 20px; left: 20px; z-index: 190; opacity: 0.8; transition: opacity 0.3s ease; }
+        .fixed-image-container:hover { opacity: 1; }
+        .fixed-image-container img { max-width: 60px; height: auto; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.visible { display: flex; opacity: 1; }
+        .modal-contenido { background-color: #2c2c2c; color: var(--blanco-texto); padding: 20px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; animation: slideIn 0.3s ease-out; border: 1px solid #555; }
+        @keyframes slideIn { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #555; padding-bottom: 15px; margin-bottom: 15px; }
+        .modal-header h2 { font-size: 1.5em; }
+        .btn-cerrar { background: none; border: none; font-size: 24px; font-weight: bold; cursor: pointer; color: var(--blanco-texto); }
+        .modal-body { overflow-y: auto; flex-grow: 1; }
+        #carrito-items, #ticket-items { list-style: none; }
+        .carrito-item, .ticket-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #444; }
+        .carrito-item-info { flex-grow: 1; }
+        .carrito-item-info h4 { font-size: 1em; margin-bottom: 5px; }
+        .carrito-item-info p { font-size: 0.9em; color: #ccc; }
+        .carrito-item-controles { display: flex; align-items: center; }
+        .carrito-item-controles button { background: linear-gradient(45deg, var(--rojo-inicio), var(--rojo-fin)); color: white; border: none; width: 25px; height: 25px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .carrito-item-controles button.btn-sumar { background: var(--verde-planta); }
+        .carrito-item-controles span { margin: 0 10px; font-weight: bold; min-width: 20px; text-align: center; }
+        .ticket-item-info { flex-grow: 1; }
+        .ticket-item .nombre { font-weight: bold; }
+        .ticket-item .tipo { font-size: 0.8em; color: #ccc; }
+        .ticket-item .cantidad { font-size: 0.9em; margin-right: 15px; }
+        .ticket-item .total-producto { font-weight: bold; }
+        .modal-footer { padding-top: 20px; margin-top: 15px; border-top: 1px solid #555; }
+        .total-container { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; }
+        .btn-accion { background-color: var(--verde-planta); color: white; width: 100%; padding: 15px; border-radius: 10px; font-size: 1.1em; font-weight: bold; border: none; text-decoration: none; display: block; text-align: center; cursor: pointer; }
+        .btn-accion.secundario { background-color: #777; margin-top: 10px; }
+        #carrito-vacio, #ticket-header { text-align: center; padding: 20px; color: #aaa; }
+        .metodo-pago-section { margin: 15px 0; padding: 15px 0; border-top: 1px solid #555; border-bottom: 1px solid #555; text-align: center; }
+        .metodo-pago-section h4 { margin-bottom: 10px; font-weight: normal; color: #ccc; }
+        .metodo-pago-opciones { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .metodo-pago-btn { background-color: #444; color: var(--blanco-texto); border: 1px solid #666; padding: 8px 15px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; }
+        .metodo-pago-btn.active { background-color: var(--verde-planta); color: white; border-color: var(--verde-planta); font-weight: bold; }
+        @media (min-width: 768px) { #productos-container { grid-template-columns: repeat(2, 1fr); } .info-section, .nav-categorias, #productos-container { max-width: 1200px; margin-left: auto; margin-right: auto;} }
+        @media (min-width: 1024px) { #productos-container { grid-template-columns: repeat(3, 1fr); } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img id="header-banner" src="https://i.imgur.com/XKZIvJK.png" alt="Caña-biz Menú Banner">
+    </header>
+    <section class="info-section">
+        <button class="info-toggle" id="info-toggle">Información Importante <span></span></button>
+        <div class="info-content" id="info-content">
+            <h3>Métodos de Pago</h3><ul><li>EFECTIVO</li><li>TRANSFERENCIA</li><li>TERMINAL (VISA, AMEX)</li></ul>
+            <h3>Horario</h3><ul><li><strong>Lunes a Viernes:</strong> 10:00 AM - 9:30 PM</li><li><strong>Sábado y Domingo:</strong> 1:00 PM - 9:00 PM</li></ul>
+            <h3>Seguridad en la Entrega</h3><p>Al momento de entrega seguir los siguientes pasos:</p><ul><li>Estacionarse debidamente y apagar las luces en caso de ser de noche.</li><li>Subirse del lado del copiloto y cerrar la puerta.</li><li>Llevar el método de pago acordado correctamente.</li><li>Guardar el producto en un lugar seguro antes de bajar del auto.</li></ul><p class="alerta">¡DE NO SEGUIR ESTOS PASOS, EL PRODUCTO NO SE ENTREGARÁ!</p>
+            <h3>Sistema de Referidos</h3><p>Por cada cliente nuevo que refieras y compre, ambos recibirán <strong>3 Prerolls + 10% de descuento</strong> en su próxima compra. El referente tiene 15 días para reclamar el premio.</p>
+        </div>
+    </section>
+    <nav class="nav-categorias" id="nav-categorias">
+        <button data-categoria="todos">Todos</button><button data-categoria="strains">Strains</button><button data-categoria="extractos">Extractos</button><button data-categoria="fryd">FRYD</button><button data-categoria="banados">Pre/Blunt Bañados</button><button data-categoria="prerolados">Prerolados</button><button data-categoria="panaderia">Panadería</button><button data-categoria="gomitas">Gomitas</button><button data-categoria="elixir">Elixir</button><button class="active" data-categoria="promos">Promos</button>
+    </nav>
+    <main id="productos-container"></main>
+    <div class="carrito-flotante"><button class="carrito-flotante-btn" id="abrir-carrito-btn" aria-label="Abrir carrito">🛒<span class="carrito-contador" id="carrito-contador">0</span></button></div>
+    <div class="fixed-image-container">
+        <img src="https://i.imgur.com/hUuMNtC.png" alt="Caña-biz personaje">
+    </div>
+    <div class="modal-overlay" id="carrito-modal"><div class="modal-contenido"><div class="modal-header"><h2>Tu Carrito</h2><button class="btn-cerrar" id="cerrar-carrito-btn">&times;</button></div><div class="modal-body"><ul id="carrito-items"></ul><p id="carrito-vacio">Tu carrito está vacío.</p></div><div class="modal-footer"><div class="total-container"><span>Total:</span><span id="carrito-total">$0.00</span></div><button class="btn-accion" id="generar-ticket-btn">Generar Ticket</button></div></div></div>
+    <div class="modal-overlay" id="ticket-modal"><div class="modal-contenido"><div class="modal-header"><h2>Ticket de Compra</h2><button class="btn-cerrar" id="cerrar-ticket-btn">&times;</button></div><div class="modal-body" id="ticket-contenido"><div id="ticket-header"><h3>Resumen de tu Pedido</h3></div><ul id="ticket-items"></ul><div class="metodo-pago-section"><h4>Selecciona tu Método de Pago:</h4><div class="metodo-pago-opciones"><button class="metodo-pago-btn" data-metodo="Efectivo">💵 Efectivo</button><button class="metodo-pago-btn" data-metodo="Transferencia">📲 Transferencia</button><button class="metodo-pago-btn" data-metodo="Terminal">💳 Terminal</button></div></div></div><div class="modal-footer"><div class="total-container"><span>Total Final:</span><span id="ticket-total-final">$0.00</span></div><div class="botones-ticket">
+        <button id="enviar-whatsapp-btn" class="btn-accion">Enviar Pedido y Ubicación por WhatsApp</button>
+        <button class="btn-accion secundario" id="volver-carrito-btn">Volver al Carrito</button>
+    </div></div></div></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const numeroWhatsApp = '526145943091'; 
+        const productos = [
+            { groupId: 'persy-snowcaps', nombre: 'Persy Snowcaps', descripcion: '', categoria: 'strains', imagen: 'https://i.imgur.com/5HBkF3I.png', variaciones: [{ id: 'st00a', tipo: '1g', precio: 299, fidelity: false },{ id: 'st00b', tipo: '3g', precio: 799, fidelity: false },{ id: 'st00c', tipo: '6g', precio: 1499, fidelity: false },{ id: 'st00d', tipo: '12g', precio: 2799, fidelity: false },{ id: 'st00e', tipo: 'Bote c/25g', precio: 4999, fidelity: false }]},
+            { groupId: 'lemon-cherry-gelato', nombre: 'Lemon Cherry Gelato', descripcion: '(MEDICINAL HYBRID)', categoria: 'strains', imagen: 'https://i.imgur.com/iC7ROIi.png', variaciones: [{ id: 'st01a', tipo: '1g', precio: 199, fidelity: false },{ id: 'st01b', tipo: '3g', precio: 499, fidelity: false },{ id: 'st01c', tipo: '6g', precio: 849, fidelity: false },{ id: 'st01d', tipo: '12g', precio: 1549, fidelity: false },{ id: 'st01e', tipo: '25g', precio: 2799, fidelity: false }]},
+            { groupId: 'sour-puss', nombre: 'Sour Puss', descripcion: '(MEDICINAL HYBRID)', categoria: 'strains', imagen: 'https://i.imgur.com/JNEybej.png', variaciones: [{ id: 'st02a', tipo: '1g', precio: 149, fidelity: false },{ id: 'st02b', tipo: '3g', precio: 499, fidelity: false },{ id: 'st02c', tipo: '6g', precio: 899, fidelity: false },{ id: 'st02d', tipo: '12g', precio: 1449, fidelity: false },{ id: 'st02e', tipo: '25g', precio: 2499, fidelity: false }]},
+            { groupId: 'pinkman-goo', nombre: 'Pinkman Goo', descripcion: '(MEDICINAL HYBRID)', categoria: 'strains', imagen: 'https://i.imgur.com/UrPEaoZ.png', variaciones: [{ id: 'st03a', tipo: '1g', precio: 149, fidelity: false },{ id: 'st03b', tipo: '3g', precio: 399, fidelity: false },{ id: 'st03c', tipo: '6g', precio: 699, fidelity: false },{ id: 'st03d', tipo: '12g', precio: 1249, fidelity: false },{ id: 'st03e', tipo: '25g', precio: 2299, fidelity: false }]},
+            { groupId: 'strawberry-k', nombre: 'Strawberry K', descripcion: '(PREMIUM HYBRID)', categoria: 'strains', imagen: 'https://i.imgur.com/NmeOWnz.png', variaciones: [{ id: 'st04a', tipo: '1g', precio: 149, fidelity: false },{ id: 'st04b', tipo: '3g', precio: 299, fidelity: false },{ id: 'st04c', tipo: '6g', precio: 499, fidelity: false },{ id: 'st04d', tipo: '12g', precio: 849, fidelity: false },{ id: 'st04e', tipo: '25g', precio: 1499, fidelity: false },{ id: 'st04fida', tipo: '1g', precio: 149, fidelity: true },{ id: 'st04fidb', tipo: '3g', precio: 249, fidelity: true },{ id: 'st04fidc', tipo: '6g', precio: 399, fidelity: true },{ id: 'st04fidd', tipo: '12g', precio: 649, fidelity: true },{ id: 'st04fide', tipo: '25g', precio: 1199, fidelity: true }]},
+            { groupId: 'blue-dream', nombre: 'Blue Dream', descripcion: '(HYBRID)', categoria: 'strains', imagen: 'https://i.imgur.com/qB6dpXM.png', variaciones: [{ id: 'st05a', tipo: '2g', precio: 99, fidelity: false },{ id: 'st05b', tipo: '7g', precio: 399, fidelity: false },{ id: 'st05c', tipo: '14g', precio: 649, fidelity: false },{ id: 'st05d', tipo: '28g', precio: 1049, fidelity: false },{ id: 'st05fida', tipo: '2g', precio: 99, fidelity: true },{ id: 'st05fidb', tipo: '7g', precio: 299, fidelity: true },{ id: 'st05fidc', tipo: '14g', precio: 549, fidelity: true },{ id: 'st05fidd', tipo: '28g', precio: 949, fidelity: true }]},
+            { groupId: 'tropical-zaza', nombre: 'Tropical ZaZa', descripcion: '(SATIVA D HYBRID)', categoria: 'strains', imagen: 'https://i.imgur.com/uS4LokW.png', variaciones: [{ id: 'st06a', tipo: '2g', precio: 99, fidelity: false },{ id: 'st06b', tipo: '7g', precio: 349, fidelity: false },{ id: 'st06c', tipo: '14g', precio: 549, fidelity: false },{ id: 'st06d', tipo: '28g', precio: 849, fidelity: false },{ id: 'st06fida', tipo: '2g', precio: 99, fidelity: true },{ id: 'st06fidb', tipo: '7g', precio: 249, fidelity: true },{ id: 'st06fidc', tipo: '14g', precio: 449, fidelity: true },{ id: 'st06fidd', tipo: '28g', precio: 749, fidelity: true }]},
+            { groupId: 'ghost-train-haze', nombre: 'GHOST TRAIN HAZE', descripcion: '(HYBRID DINDICA)', categoria: 'strains', imagen: 'https://i.imgur.com/cFEAUGm.png', variaciones: [{ id: 'st07a', tipo: '2g', precio: 99, fidelity: false },{ id: 'st07b', tipo: '7g', precio: 299, fidelity: false },{ id: 'st07c', tipo: '14g', precio: 399, fidelity: false },{ id: 'st07d', tipo: '28g', precio: 649, fidelity: false },{ id: 'st07fida', tipo: '2g', precio: 99, fidelity: true },{ id: 'st07fidb', tipo: '7g', precio: 249, fidelity: true },{ id: 'st07fidc', tipo: '14g', precio: 349, fidelity: true },{ id: 'st07fidd', tipo: '28g', precio: 549, fidelity: true }]},
+            { groupId: 'afghan-k', nombre: 'AFGHAN K', descripcion: '(INDICA)', categoria: 'strains', imagen: 'https://i.imgur.com/uyRHDrE.png', variaciones: [{ id: 'st08a', tipo: '2g', precio: 99, fidelity: false },{ id: 'st08b', tipo: '7g', precio: 249, fidelity: false },{ id: 'st08c', tipo: '14g', precio: 349, fidelity: false },{ id: 'st08d', tipo: '28g', precio: 549, fidelity: false },{ id: 'st08fida', tipo: '2g', precio: 99, fidelity: true },{ id: 'st08fidb', tipo: '7g', precio: 249, fidelity: true },{ id: 'st08fidc', tipo: '14g', precio: 349, fidelity: true },{ id: 'st08fidd', tipo: '28g', precio: 499, fidelity: true }]},
+            { groupId: 'frydonuts', nombre: 'FRYDONUTS', descripcion: '', categoria: 'extractos', imagen: 'https://i.imgur.com/QN9bu4f.png', variaciones: [{ id: 'ex04a', tipo: '1pz', precio: 999, fidelity: false },{ id: 'ex04b', tipo: '2pz', precio: 1849, fidelity: false },{ id: 'ex04c', tipo: '3pz', precio: 2299, fidelity: false },{ id: 'ex04fida', tipo: '1pz', precio: 899, fidelity: true },{ id: 'ex04fidb', tipo: '2pz', precio: 1749, fidelity: true },{ id: 'ex04fidc', tipo: '3pz', precio: 2149, fidelity: true }]},
+            { groupId: 'snooze', nombre: 'Snooze 2g', descripcion: '', categoria: 'extractos', imagen: 'https://i.imgur.com/zjPcA4S.png', variaciones: [{ id: 'ex05a', tipo: '1pz', precio: 899, fidelity: false },{ id: 'ex05b', tipo: '2pz', precio: 1599, fidelity: false },{ id: 'ex05c', tipo: '3pz', precio: 2249, fidelity: false },{ id: 'ex05fida', tipo: '1pz', precio: 799, fidelity: true },{ id: 'ex05fidb', tipo: '2pz', precio: 1499, fidelity: true },{ id: 'ex05fidc', tipo: '3pz', precio: 2150, fidelity: true }]},
+            { groupId: 'favorites', nombre: 'Favorites 2g', descripcion: '', categoria: 'extractos', imagen: 'https://i.imgur.com/fHafkWb.png', variaciones: [{ id: 'ex06a', tipo: '1pz', precio: 849, fidelity: false },{ id: 'ex06b', tipo: '2pz', precio: 1549, fidelity: false },{ id: 'ex06c', tipo: '3pz', precio: 2049, fidelity: false },{ id: 'ex06fida', tipo: '1pz', precio: 699, fidelity: true },{ id: 'ex06fidb', tipo: '2pz', precio: 1399, fidelity: true },{ id: 'ex06fidc', tipo: '3pz', precio: 1999, fidelity: true }]},
+            { groupId: 'fryd-mini', nombre: 'FRYD Mini Infused Prerolls', descripcion: '', categoria: 'fryd', imagen: 'https://i.imgur.com/lMHqrWQ.png', variaciones: [{ id: 'fryd02a', tipo: '1 pz', precio: 249, fidelity: false },{ id: 'fryd02b', tipo: '1 Bote c/5pz', precio: 1099, fidelity: false },{ id: 'fryd02c', tipo: '2 Botes c/5pz', precio: 2049, fidelity: false },{ id: 'fryd02d', tipo: '3 Botes c/5pz', precio: 2999, fidelity: false },{ id: 'fryd02fida', tipo: '1 pz', precio: 199, fidelity: true },{ id: 'fryd02fidb', tipo: '1 Bote c/5pz', precio: 949, fidelity: true },{ id: 'fryd02fidc', tipo: '2 Botes c/5pz', precio: 1849, fidelity: true },{ id: 'fryd02fidd', tipo: '3 Botes c/5pz', precio: 2699, fidelity: true }]},
+            { groupId: 'fryd-3g', nombre: 'FRYD 3g', descripcion: '', categoria: 'fryd', imagen: 'https://i.imgur.com/mlZQXkX.png', variaciones: [{ id: 'fryd03a', tipo: '1 pz', precio: 1149, fidelity: false },{ id: 'fryd03b', tipo: '2pz', precio: 2049, fidelity: false },{ id: 'fryd03c', tipo: '3pz', precio: 2999, fidelity: false },{ id: 'fryd03fida', tipo: '1 pz', precio: 949, fidelity: true },{ id: 'fryd03fidb', tipo: '2pz', precio: 1799, fidelity: true },{ id: 'fryd03fidc', tipo: '3pz', precio: 2699, fidelity: true }]},
+            { groupId: 'fryd-combo', nombre: 'FRYD Original 3g + Gummies 5pz', descripcion: 'Vape 3g + Paquete de Gomitas', categoria: 'fryd', imagen: 'https://i.imgur.com/mlZQXkX.png', variaciones: [{ id: 'fryd04', tipo: '1 Combo', precio: 1398, fidelity: false }]},
+            { groupId: 'riiss-rolls', nombre: 'RIIISS ROLLS INF BLUNT 2g', descripcion: '', categoria: 'banados', imagen: 'https://i.imgur.com/cTa91qf.png', variaciones: [{ id: 'ban01a', tipo: '1 pz', precio: 549, fidelity: false },{ id: 'ban01b', tipo: '2pz', precio: 1049, fidelity: false },{ id: 'ban01c', tipo: '3pz', precio: 1499, fidelity: false },{ id: 'ban01fida', tipo: '1 pz', precio: 499, fidelity: true },{ id: 'ban01fidb', tipo: '2 pz', precio: 999, fidelity: true },{ id: 'ban01fidc', tipo: '3 pz', precio: 1449, fidelity: true }]},
+            { groupId: 'packwoods-inf', nombre: 'PACKWOODS INF BLUNT 2g', descripcion: '', categoria: 'banados', imagen: 'https://i.imgur.com/tCcdol8.png', variaciones: [{ id: 'ban02a', tipo: '1 pz', precio: 699, fidelity: false },{ id: 'ban02b', tipo: '2pz', precio: 1349, fidelity: false },{ id: 'ban02c', tipo: '3pz', precio: 1999, fidelity: false },{ id: 'ban02fida', tipo: '1 pz', precio: 599, fidelity: true },{ id: 'ban02fidb', tipo: '2 pz', precio: 1149, fidelity: true },{ id: 'ban02fidc', tipo: '3 pz', precio: 1599, fidelity: true }]},
+            { groupId: 'sluggers-joints', nombre: 'Sluggers hit Infused-Joints', descripcion: '', categoria: 'banados', imagen: 'https://i.imgur.com/NihFI4V.png', variaciones: [{ id: 'ban03a', tipo: '1pz', precio: 249, fidelity: false },{ id: 'ban03b', tipo: '1 Cajita c/5pz', precio: 1099, fidelity: false },{ id: 'ban03c', tipo: '2 Cajitas c/5pz', precio: 2099, fidelity: false },{ id: 'ban03d', tipo: '3 Cajitas c/5pz', precio: 2949, fidelity: false }]},
+            { groupId: 'baby-packman', nombre: 'Baby Packman Prerolls', descripcion: '', categoria: 'banados', imagen: 'https://i.imgur.com/5zvcNl5.png', variaciones: [{ id: 'ban04a', tipo: '1 pz', precio: 199, fidelity: false },{ id: 'ban04b', tipo: '1 Bote c/5pz', precio: 949, fidelity: false },{ id: 'ban04c', tipo: '2 Botes c/5pz', precio: 1799, fidelity: false },{ id: 'ban04d', tipo: '3 Botes c/5pz', precio: 2599, fidelity: false },{ id: 'ban04fida', tipo: '1 pz', precio: 149, fidelity: true },{ id: 'ban04fidb', tipo: '1 Bote c/5pz', precio: 899, fidelity: true },{ id: 'ban04fidc', tipo: '2 Botes c/5pz', precio: 1699, fidelity: true },{ id: 'ban04fidd', tipo: '3 Botes c/5pz', precio: 2449, fidelity: true }]},
+            { groupId: 'casey-jones', nombre: 'PREROLL BAÑADO CASEY JONES', descripcion: '(1g)', categoria: 'banados', imagen: 'https://i.imgur.com/7BpTx3W.png', variaciones: [{ id: 'ban05a', tipo: '1pz', precio: 199, fidelity: false },{ id: 'ban05b', tipo: '2pz', precio: 299, fidelity: false },{ id: 'ban05c', tipo: '3pz', precio: 399, fidelity: false }]},
+            { groupId: 'medi-pre', nombre: 'PREROLL BAÑADO MEDI', descripcion: '(1g)', categoria: 'banados', imagen: 'https://i.imgur.com/g4swban.png', variaciones: [{ id: 'ban06a', tipo: '1pz', precio: 299, fidelity: false },{ id: 'ban06b', tipo: '2pz', precio: 499, fidelity: false },{ id: 'ban06c', tipo: '3pz', precio: 699, fidelity: false }]},
+            { groupId: 'kryptonite', nombre: 'BLUNT BAÑADO KRYPTONITE', descripcion: '(2g)', categoria: 'banados', imagen: 'https://i.imgur.com/7BpTx3W.png', variaciones: [{ id: 'ban07a', tipo: '1 pz', precio: 249, fidelity: false },{ id: 'ban07b', tipo: '2pz', precio: 449, fidelity: false }]},
+            { groupId: 'maui-waui', nombre: 'BLUNT BAÑADO MEDI MAUI WALI', descripcion: '(1.25g)', categoria: 'banados', imagen: 'https://i.imgur.com/39g1vGl.png', variaciones: [{ id: 'ban08a', tipo: '1 pz', precio: 249, fidelity: false },{ id: 'ban08b', tipo: '2pz', precio: 449, fidelity: false },{ id: 'ban08c', tipo: '3pz', precio: 649, fidelity: false }]},
+            { groupId: 'blunts-blue-dream', nombre: 'BLUNTS BLUE DREAM', descripcion: '', categoria: 'prerolados', imagen: 'https://i.imgur.com/yVS44Lz.png', variaciones: [{ id: 'pre04a', tipo: '1x', precio: 99, fidelity: false },{ id: 'pre04b', tipo: '3x', precio: 249, fidelity: false }]},
+            { groupId: 'kush-b', nombre: 'PREROLLS KUSH B', descripcion: '', categoria: 'prerolados', imagen: 'https://i.imgur.com/XayJZ7E.png', variaciones: [{ id: 'pre03a', tipo: '1x', precio: 99, fidelity: false },{ id: 'pre03b', tipo: '4x', precio: 199, fidelity: false },{ id: 'pre03c', tipo: '6x', precio: 249, fidelity: false },{ id: 'pre03d', tipo: '14x', precio: 499, fidelity: false }]},
+            { groupId: 'kush-a', nombre: 'PREROLLS KUSH A', descripcion: '', categoria: 'prerolados', imagen: 'https://i.imgur.com/XayJZ7E.png', variaciones: [{ id: 'pre01a', tipo: '1x', precio: 99, fidelity: false },{ id: 'pre01b', tipo: '3x', precio: 249, fidelity: false },{ id: 'pre01c', tipo: '6x', precio: 399, fidelity: false }]},
+            { groupId: 'gush-mints-pre', nombre: 'PREROLLS GUSH MINTS', descripcion: '', categoria: 'prerolados', imagen: 'https://i.imgur.com/84L8jGJ.png', variaciones: [{ id: 'pre02a', tipo: '1x', precio: 199, fidelity: false },{ id: 'pre02b', tipo: '2x', precio: 349, fidelity: false },{ id: 'pre02c', tipo: '3x', precio: 449, fidelity: false }]},
+            { groupId: 'thc-brownie', nombre: 'THC BROWNIE', descripcion: '1 pz', categoria: 'panaderia', imagen: 'https://i.imgur.com/vw1NrqE.png', variaciones: [{ id: 'pan01', tipo: '1 Brownie', precio: 149, fidelity: false }]},
+            { groupId: 'thc-cookie', nombre: 'THC COOKIE', descripcion: '1 pz', categoria: 'panaderia', imagen: 'https://i.imgur.com/tDED9Lm.png', variaciones: [{ id: 'pan02', tipo: '1 Galleta', precio: 99, fidelity: false }]},
+            { groupId: 'thc-butter', nombre: 'THC BUTTER', descripcion: '15gs - Ideal para cocinar', categoria: 'panaderia', imagen: 'https://i.imgur.com/qLAywKz.png', variaciones: [{ id: 'pan03', tipo: '1 Mantequilla', precio: 149, fidelity: false }]},
+            { groupId: 'sour-xo', nombre: 'Sour Big XO Gummy', descripcion: '35mg THC c/u', categoria: 'gomitas', imagen: 'https://i.imgur.com/6zoLML0.png', variaciones: [{ id: 'gom01a', tipo: '1pz', precio: 99, fidelity: false },{ id: 'gom01b', tipo: '3pz', precio: 249, fidelity: false }]},
+            { groupId: 'elixir-mango', nombre: 'Elixir de Mango', descripcion: 'Frutas 100% Naturales', categoria: 'elixir', imagen: 'https://i.imgur.com/Rwnbj5J.png', variaciones: [{ id: 'eli01', tipo: '1pz', precio: 199, fidelity: false },{ id: 'eli02', tipo: '2pz', precio: 349, fidelity: false }]},
+            { groupId: 'elixir-platinum', nombre: 'ELIXIR PLATINUM', descripcion: '(100 MG)', categoria: 'elixir', imagen: 'https://i.imgur.com/b1agNQ3.png', variaciones: [{ id: 'eli03a', tipo: '1pz', precio: 299, fidelity: false },{ id: 'eli03b', tipo: '2pz', precio: 499, fidelity: false }]},
+            { groupId: 'promo-a', nombre: 'Promo A', descripcion: '4 Pre Tropical + 2 Pre Ghost GRATIS', categoria: 'promos', imagen: 'https://i.imgur.com/y2PPCuk.png', variaciones: [{ id: 'pro01', tipo: '1 Paquete', precio: 249, fidelity: false }]},
+            { groupId: 'promo-b', nombre: 'Promo B', descripcion: '1/2 Oz Blue Dream + Snooze Pod 2g + 2 Pre Candy Jack GRATIS', categoria: 'promos', imagen: 'https://i.imgur.com/y2PPCuk.png', variaciones: [{ id: 'pro02', tipo: '1 Paquete', precio: 1249, fidelity: false }]},
+            { groupId: 'promo-c', nombre: 'Promo C', descripcion: '2g Lemon Cherry + 1 Brownie/Cookie/Gummy + 2 Pre Candy Jack GRATIS', categoria: 'promos', imagen: 'https://i.imgur.com/y2PPCuk.png', variaciones: [{ id: 'pro03', tipo: '1 Paquete', precio: 399, fidelity: false }]},
+            { groupId: 'membresia', nombre: 'Membresía Fidelity', descripcion: 'Vigencia 2 meses', categoria: 'promos', imagen: 'https://i.imgur.com/6Som8cD.png', variaciones: [{ id: 'pro04', tipo: '1 Membresía', precio: 249, fidelity: false }]}
+        ];
+        
+        const productosContainer = document.getElementById('productos-container');
+        const navCategorias = document.getElementById('nav-categorias');
+        const infoToggle = document.getElementById('info-toggle');
+        const infoContent = document.getElementById('info-content');
+        const carritoContador = document.getElementById('carrito-contador');
+        const abrirCarritoBtn = document.getElementById('abrir-carrito-btn');
+        const cerrarCarritoBtn = document.getElementById('cerrar-carrito-btn');
+        const carritoModal = document.getElementById('carrito-modal');
+        const carritoItemsContainer = document.getElementById('carrito-items');
+        const carritoTotalEl = document.getElementById('carrito-total');
+        const carritoVacioMsg = document.getElementById('carrito-vacio');
+        const generarTicketBtn = document.getElementById('generar-ticket-btn');
+        const ticketModal = document.getElementById('ticket-modal');
+        const cerrarTicketBtn = document.getElementById('cerrar-ticket-btn');
+        const ticketItemsContainer = document.getElementById('ticket-items');
+        const ticketTotalFinalEl = document.getElementById('ticket-total-final');
+        const enviarWhatsAppBtn = document.getElementById('enviar-whatsapp-btn');
+        const volverCarritoBtn = document.getElementById('volver-carrito-btn');
+        const metodoPagoContainer = document.querySelector('.metodo-pago-opciones');
+        let carrito = {};
+
+        const variacionesMap = {};
+        productos.forEach(grupo => {
+            grupo.variaciones.forEach(variacion => {
+                variacionesMap[variacion.id] = { ...variacion, nombre: grupo.nombre, groupId: grupo.groupId };
+            });
+        });
+
+        const renderizarProductos = (categoriaFiltro) => {
+            productosContainer.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            const productosFiltrados = categoriaFiltro === 'todos' ? productos : productos.filter(p => p.categoria === categoriaFiltro);
+
+            productosFiltrados.forEach(grupo => {
+                const card = document.createElement('div');
+                card.className = 'producto-card';
+                card.dataset.groupId = grupo.groupId;
+                
+                if (grupo.variaciones.length > 1) {
+                    card.innerHTML = `<div class="producto-header"><img src="${grupo.imagen}" alt="${grupo.nombre}" class="producto-imagen"><div class="producto-info"><h3 class="producto-nombre">${grupo.nombre}</h3><p class="producto-descripcion">${grupo.descripcion}</p></div><div class="expand-icon">+</div></div><div class="producto-variaciones">${grupo.variaciones.map(v => `<div class="variacion-item"><div class="variacion-info"><span class="tipo">${v.tipo}</span>${v.fidelity ? '<span class="fidelity-tag">⭐ PRECIO FIDELITY</span>' : ''}<span class="precio">$${v.precio.toFixed(2)}</span></div><button class="btn-agregar" data-id="${v.id}">Agregar</button></div>`).join('')}</div>`;
+                } else {
+                    const v = grupo.variaciones[0];
+                    card.innerHTML = `<div class="producto-header no-expand"><img src="${grupo.imagen}" alt="${grupo.nombre}" class="producto-imagen"><div class="producto-info"><h3 class="producto-nombre">${grupo.nombre}</h3><p class="producto-descripcion">${v.tipo ? `${v.tipo} - ` : ''}${grupo.descripcion}</p></div></div><div class="producto-pie-simple"><span class="producto-precio-simple">$${v.precio.toFixed(2)}</span><button class="btn-agregar" data-id="${v.id}">Agregar</button></div>`;
+                }
+                fragment.appendChild(card);
+            });
+            productosContainer.appendChild(fragment);
+        };
+
+        productosContainer.addEventListener('click', (e) => {
+            const cardHeader = e.target.closest('.producto-header:not(.no-expand)');
+            if (cardHeader) cardHeader.parentElement.classList.toggle('expanded');
+            const btnAgregar = e.target.closest('.btn-agregar');
+            if (btnAgregar) { e.stopPropagation(); agregarAlCarrito(btnAgregar.dataset.id); }
+        });
+
+        const agregarAlCarrito = (variacionId) => {
+            if (carrito[variacionId]) carrito[variacionId].cantidad++;
+            else carrito[variacionId] = { ...variacionesMap[variacionId], cantidad: 1 };
+            actualizarCarritoUI();
+        };
+        
+        const cambiarCantidad = (variacionId, cambio) => {
+            if (carrito[variacionId]) {
+                carrito[variacionId].cantidad += cambio;
+                if (carrito[variacionId].cantidad <= 0) delete carrito[variacionId];
+                actualizarCarritoUI();
+            }
+        };
+
+        const actualizarCarritoUI = () => {
+            carritoItemsContainer.innerHTML = '';
+            let total = 0;
+            let totalItems = 0;
+            if (Object.keys(carrito).length === 0) {
+                carritoVacioMsg.style.display = 'block';
+                generarTicketBtn.style.display = 'none';
+            } else {
+                carritoVacioMsg.style.display = 'none';
+                generarTicketBtn.style.display = 'block';
+                Object.values(carrito).forEach(item => {
+                    total += item.precio * item.cantidad;
+                    totalItems += item.cantidad;
+                    const fidelityTag = item.fidelity ? ' ⭐' : '';
+                    const li = document.createElement('li');
+                    li.className = 'carrito-item';
+                    li.innerHTML = `<div class="carrito-item-info"><h4>${item.nombre}${fidelityTag}</h4><p>${item.tipo} - $${item.precio.toFixed(2)} c/u</p></div><div class="carrito-item-controles"><button class="btn-restar" data-id="${item.id}">-</button><span>${item.cantidad}</span><button class="btn-sumar" data-id="${item.id}">+</button></div>`;
+                    carritoItemsContainer.appendChild(li);
+                });
+            }
+            carritoTotalEl.textContent = `$${total.toFixed(2)}`;
+            carritoContador.textContent = totalItems;
+            carritoContador.style.display = totalItems > 0 ? 'flex' : 'none';
+        };
+
+        const generarTicket = () => {
+            ticketItemsContainer.innerHTML = '';
+            let totalFinal = 0;
+            Object.values(carrito).forEach(item => {
+                const totalProducto = item.precio * item.cantidad;
+                totalFinal += totalProducto;
+                const fidelityTag = item.fidelity ? ' (Fidelity) ⭐' : '';
+                const li = document.createElement('li');
+                li.className = 'ticket-item';
+                li.innerHTML = `<div class="ticket-item-info"><div class="nombre">${item.nombre}${fidelityTag}</div><div class="tipo">${item.tipo}</div></div><div style="text-align:right;"><span class="cantidad">${item.cantidad} x $${item.precio.toFixed(2)}</span><div class="total-producto">$${totalProducto.toFixed(2)}</div></div>`;
+                ticketItemsContainer.appendChild(li);
+            });
+            
+            ticketTotalFinalEl.textContent = `$${totalFinal.toFixed(2)}`;
+            const currentActive = metodoPagoContainer.querySelector('.active');
+            if (currentActive) currentActive.classList.remove('active');
+            carritoModal.classList.remove('visible');
+            ticketModal.classList.add('visible');
+        };
+
+        enviarWhatsAppBtn.addEventListener('click', () => {
+            const selectedMethodBtn = metodoPagoContainer.querySelector('.active');
+            if (!selectedMethodBtn) {
+                alert('Por favor, selecciona un método de pago antes de enviar.');
+                return;
+            }
+            const metodoDePago = selectedMethodBtn.dataset.metodo;
+            let totalFinal = 0;
+            let ordenDeCompra = '';
+            Object.values(carrito).forEach(item => {
+                totalFinal += item.precio * item.cantidad;
+                const fidelityTag = item.fidelity ? ' (Fidelity) ⭐' : '';
+                ordenDeCompra += `* ${item.cantidad}x ${item.nombre} - ${item.tipo}${fidelityTag}\n`;
+            });
+            
+            let mensajeWhatsApp = `¡Hola! Quisiera hacer el siguiente pedido:\n\n${ordenDeCompra}\nMétodo de Pago: ${metodoDePago}\n*Total: $${totalFinal.toFixed(2)}*\n\nTe comparto la ubicacion para confirmar mi pedido.`;
+            const link = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensajeWhatsApp)}`;
+            window.open(link, '_blank');
+        });
+        
+        metodoPagoContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('metodo-pago-btn')) {
+                const currentActive = metodoPagoContainer.querySelector('.active');
+                if (currentActive) currentActive.classList.remove('active');
+                e.target.classList.add('active');
+            }
+        });
+
+        infoToggle.addEventListener('click', () => { infoContent.classList.toggle('open'); infoToggle.classList.toggle('active'); });
+        navCategorias.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') { document.querySelector('.nav-categorias .active').classList.remove('active'); e.target.classList.add('active'); renderizarProductos(e.target.dataset.categoria); }});
+        carritoItemsContainer.addEventListener('click', e => { const btnSumar = e.target.closest('.btn-sumar'); const btnRestar = e.target.closest('.btn-restar'); if (btnSumar) cambiarCantidad(btnSumar.dataset.id, 1); if (btnRestar) cambiarCantidad(btnRestar.dataset.id, -1); });
+        abrirCarritoBtn.addEventListener('click', () => carritoModal.classList.add('visible'));
+        cerrarCarritoBtn.addEventListener('click', () => carritoModal.classList.remove('visible'));
+        cerrarTicketBtn.addEventListener('click', () => ticketModal.classList.remove('visible'));
+        generarTicketBtn.addEventListener('click', generarTicket);
+        volverCarritoBtn.addEventListener('click', () => { ticketModal.classList.remove('visible'); carritoModal.classList.add('visible'); });
+        carritoModal.addEventListener('click', e => { if (e.target === carritoModal) carritoModal.classList.remove('visible'); });
+        ticketModal.addEventListener('click', e => { if (e.target === ticketModal) ticketModal.classList.remove('visible'); });
+        
+        renderizarProductos('promos');
+        actualizarCarritoUI();
+    });
+    </script>
+</body>
+</html>
